@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Sample Co-Viewing Application</title>
+    
+	<link href="style.css" rel="stylesheet" type="text/css" />
+	
+	<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js" type="text/javascript"></script>-->
+	<script src="scripts/jquery.min.js" type="text/javascript"></script>
+    <script src="http://staging.tokbox.com/v0.91/js/TB.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="scripts/opentok.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            session.addEventListener('signalReceived', signalReceivedHandler);
+
+            session.connect(apiKey, token);
+        });
+
+        function signalReceivedHandler(event) {
+            var data = {
+                'sessionId': sessionId
+            };
+
+            $.ajax({
+                url: "getContent.php",
+                data: data,
+                dataType: "json",
+                success: function(data) {
+					//set the content space to be the new content
+					$("#content").attr("src", data.contentSource);
+                }
+            });
+        }
+
+		function setContent() {
+			var data = {
+				'sessionId': sessionId,
+				'contentSource': $("#embedURL").val(),
+				'contentState': 'play'
+			}
+			
+			$.ajax({
+				url: "saveContent.php",
+				data: data,
+				dataType: "json",
+				success: function(data) {
+					session.signal();
+				}
+			});
+			
+			return false;
+		}
+
+    </script>
+</head>
+<body>
+	<div id="container">
+		<div id="links">
+       		<input type="button" value="Start Publishing" id ="publishLink" onClick="javascript:startPublishing()" />
+       		<input type="button" value="Stop Publishing" id ="unpublishLink" onClick="javascript:stopPublishing()" />
+		</div>
+		<div id="videobox"></div>
+    	<div id="sharedContent">
+    		<form onsubmit="setContent(); return false;">
+    			<label>iframe URL</label>
+				<input type="text" name="embedURL" id="embedURL" />
+				<input type="submit" value="submit" />
+    		</form>
+			<iframe id="content" width="560" height="349" src="" frameborder="0"></iframe>
+		</div>
+	</div>
+</body>
+</html>
